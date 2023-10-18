@@ -1,0 +1,28 @@
+# Pass filter limit
+pmin: [-0.1, -0.05, -0.1]
+pmax: [ 0.1,  0.05,  0.03]
+
+# Offset between mesh (end effector) frame and Grasp Point
+##################################################################
+# Gripper mesh origin is at the base
+# Each time we set the grasp pose in the simulation, the grasp pose
+# o_t_g from the dataset need to be right multiplied by grasp_t_ee to 
+# obtain the gripper actor pose in Isaac Gym
+##################################################################
+grasp_t_ee: 
+  rotation: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+  translation: [0, 0, -0.21]
+
+# Camera to mesh (end effector) frame transformation parameter
+ee_t_cam:
+  euler_angles: [-10]
+  euler_seq: 'x'
+  translation: [0, -0.07632, 0.09411]
+
+# Number of points for each PCD crop after FP downsampling
+kq: 1000
+
+dataset_root: "dataset"
+object_info: "dataset/object_info.hdf5"
+gripper_mesh: "resources/SR_Gripper_Collision_Open.stl"
+gripper_points: "resources/SR_Gripper_Collision_Open.pt"
