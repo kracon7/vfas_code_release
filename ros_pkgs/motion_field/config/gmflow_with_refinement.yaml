@@ -1,0 +1,26 @@
+checkpoint: 'resource/gmflow_with_refine_things-36579974.pth'
+
+padding_factor: 32
+max_flow: 400
+strict_resume: false
+
+# GMFlow model
+num_scales: 2
+feature_channels: 128
+upsample_factor: 4
+num_transformer_layers: 6
+num_head: 1
+attention_type: 'swin'
+ffn_dim_expansion: 4
+attn_splits_list: [2, 8]
+corr_radius_list: [-1, 4]
+prop_radius_list: [-1, 1]
+
+dir_paired_data: false
+save_flo_flow: false
+pred_bidir_flow: false
+fwd_bwd_consistency_check: false
+di: 3
+
+# distributed training
+local_rank: 0

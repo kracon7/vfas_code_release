@@ -1,0 +1,8 @@
+pyvenv
+*.pyc
+log
+build
+install
+.vscode
+*.log
+*.csv
