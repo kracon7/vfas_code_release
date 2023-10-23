@@ -19,7 +19,7 @@ class WristCamPCDFilter(Node):
     a pointcloud in the wrist camera frame with gripper fingers filtered. 
     """
 
-    def __init__(self, voxel_size):
+    def __init__(self, voxel_size, to_frame='base'):
         super().__init__(f"wrist_cam_pcd_filter")
         self.camera_k = None
         self.voxel_downsample_size = voxel_size
@@ -31,6 +31,13 @@ class WristCamPCDFilter(Node):
         with open(param_file, 'r') as f:
             self.params = yaml.load(f, Loader=yaml.Loader)
 
+        if to_frame == 'base':
+            self.frame_id = self.params['robot_base_link_name']
+        elif to_frame =='camera':
+            self.frame_id = self.params['camera_link_name'] 
+        else:
+            raise Exception("Wrist PCD filter, unrecognized to_frame option!")
+        
         # Load finger mask
         mask_file = os.path.join(
                         get_package_share_directory('closed_loop_grasping'),

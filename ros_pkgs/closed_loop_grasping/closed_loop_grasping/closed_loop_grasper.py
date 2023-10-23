@@ -91,6 +91,7 @@ class ClosedLoopGrasper(Node):
         # clg_status is False by default and this module will not be activated
         self.clg_status = False
         self.world_T_grasp_init = np.eye(4)
+        self.world_T_pregrasp_init = np.eye(4)
 
         self.pcd_sub = self.create_subscription(PointCloud2,
                                                 self.params['pcd_topic_name'],
@@ -112,13 +113,23 @@ class ClosedLoopGrasper(Node):
 
     def clg_trigger_callback(self, msg: Transform):
         self.clg_status = True
+
         self.world_T_grasp_init = ros_transform_to_matrix(msg)
+        self.world_T_pregrasp_init = self.world_T_grasp_init @ get_T(z=-self.pregrasp_distance)
+
+        # Attemp to move to initial pregrasp pose
+        target_msg = TargetMsg()
+        target_msg.home = False
+        target_msg.pose = matrix_to_ros_transform(self.world_T_pregrasp_init)
+        self.target_publisher.publish(target_msg)
+
         success = self.servo_to_grasp()
+        
         # Send robot to HOME config when servo fails
         if not success:
             target_msg = TargetMsg()
             target_msg.home = True
-            target_msg.pose = matrix_to_ros_transform()
+            target_msg.pose = matrix_to_ros_transform(np.eye(4))
             self.target_publisher.publish(target_msg)
 
         self.clg_status = False
@@ -133,8 +144,8 @@ class ClosedLoopGrasper(Node):
             self.condition_object.release()
 
     def servo_to_grasp(self,
-            dist_threshold = 0.025,     #Tolerance in meters for reaching pregrasp
-            angle_threshold = 5,        #Tolerance in degrees for reaching pregrasp
+            dist_threshold = 0.025,     #Tolerance in meters for reaching grasp pose
+            angle_threshold = 5,        #Tolerance in degrees for reaching grasp pose
             init_score_threshold = 0.75, #Minimum score to start start servoing
             pregrasp_distance = 0.08,   #Offset in -Z from goal pose
             pregrasp_radius = 0.005,    #Cone diameter at pregrasp distance to define tractor beam
@@ -192,6 +203,15 @@ class ClosedLoopGrasper(Node):
 
     def service_state_machine(self):
         if self.state == State.INIT:
+            # Check if the robot has reached self.world_T_pregrasp_init
+            current_pose = self.get_current_pose()
+            t_dist, angle_dist = distance_between_transforms(current_pose, 
+                                                             self.world_T_pregrasp_init)
+            is_valid_init = np.linalg.norm(t_dist) < self.dist_threshold \
+                            and np.rad2deg(angle_dist) < self.angle_threshold
+            if not is_valid_init:
+                return
+            
             self.get_logger().info("State: INIT")
             self.run_core_algorithm(
                 enable_mf = False,
@@ -206,8 +226,6 @@ class ClosedLoopGrasper(Node):
                 #Set seed to be that best grasp we found
                 self.robot_T_seed_grasp = torch.inverse(self.best_grasp_T_robot).clone()
                 self.seed_score = self.best_grasp_score.clone()
-                # !!!!!!  Sleep here and you will screw up MF offset and everything else  !!!!!!!!!!
-                ## time.sleep(5.0)  
                 self.state = State.SERVO_TO_PREGRASP
                 self.get_logger().debug("###### Initialization complete!!! ######")
                 self.pregrasp_init_time = time.time()  
@@ -222,7 +240,7 @@ class ClosedLoopGrasper(Node):
                 rviz_mode='all',
             )
 
-            # Servo robot to goal pose
+            # Attemp to move to new pregrasp pose
             goal_pose = self.robot_T_seed_grasp.squeeze().detach().cpu().numpy() @ get_T(z=-self.pregrasp_distance)
             
             target_msg = TargetMsg()
@@ -277,8 +295,8 @@ class ClosedLoopGrasper(Node):
         elif self.state == State.DONE:
             self.get_logger().info("State: DONE")
         
-        elif self.state == State.PREGRASP_TIMEOUT:
-            self.get_logger().info("State: PREGRASP_TIMEOUT")
+        elif self.state == State.TIMEOUT:
+            self.get_logger().info("State: TIMEOUT")
 
 
     def run_core_algorithm(self,

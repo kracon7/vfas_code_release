@@ -1,7 +1,10 @@
+# Grasp evaluator network checkpoing
 model_file: 'model15_net.pth'
+# Number of random samples for grasp poses at each iteration
 num_draws: 16
 device: 'cuda'
 
+# ROS parameters
 robot_base_link_name: 'panda_link0'
 camera_link_name: 'rgb_camera'
 joint_states_topic_name: '/joint_states'
@@ -13,17 +16,22 @@ mfild_topic_name: '/motion_field'
 clg_trigger_topic_name: '/clg_trigger'
 target_msg_topic_name: '/target'
 
+# Camera and grasp pose calculator parameters
 urdf_file_name: 'panda.urdf.xml'
 camera_extrinsics_file_name: 'D405_CAD_extrinsics.json'
 
+# Pre-computed point cloud of the gripper surface for grasp quality evaluation, 
+# same as the one from /data_and_training
 gripper_points: 'SR_Gripper_Collision_Open.pt'
+
 use_grasp_smoother: True
 
 # Noise injection parameters
 add_noise_batches: True
 num_noise_batches: 3  #Set to zero if not using noisy batches!
 
-#Possible scoring modes are: ['q_only', 'trans_rot_penalty', 'q_noise', 'q_noise_with_tr']
+# Possible scoring modes are: 
+# ['q_only', 'trans_rot_penalty', 'q_noise', 'q_noise_with_tr']
 scoring_mode: 'q_noise_with_tr'
 
 # Limits of uniform distribution for translation [m]
@@ -42,22 +50,12 @@ radius: 0.01
 nc: 1
 
 # Pass filter limit
-# Regular Crop Size
-# pmin: [-0.125, -0.15, -0.1]
-# pmax: [ 0.125,  0.15,  0.25]
-# # Smaller Crop Size
 pmin: [-0.1, -0.05, -0.1]
 pmax: [ 0.1,  0.05,  0.03]
 
 
 # Grid sampler parameters
-# grid_xlim: [-0.06, 0.06]
-# grid_ylim: [-0.06, 0.06]
-# grid_zlim: [0.0, 0.04]
-# grid_density: [6, 6, 1] 
 grid_xlim: [0.0, 0.06]
 grid_ylim: [-0.1, 0.15]
 grid_zlim: [0.0, 0.04]
-grid_density: [1, 30, 1] 
-
-mfield_sampling: False
+grid_density: [1, 30, 1]
