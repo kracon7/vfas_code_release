@@ -70,7 +70,6 @@ The topics to interface with this package are **```/clg_trigger```** and **```/t
     - ```/target/home```: if ```True```, the subscriber node should define a ```HOME``` pose and send the robot home. Since the home configuration varies across robot manipulator types, we will leave this implementation to the users.
     - ```/target/goal_pose```: the target grasp pose. It is intended to be used only when ```/target/home``` is ```False```
 
-Everytime **```/closed_loop_grasper```** node receives a message **```/clg_trigger```**
+Everytime **```/closed_loop_grasper```** node receives a message **```/clg_trigger```**, the callback function will run once in blocking mode until an error or timeout. We implemented a state machine for the transitions between different stages of the closed-loop grasping process. The callback function can be summarized by the figure below. The publishing steps for **```/target_msg```** is abstracted by the purple circle. Please refer the [code](./closed_loop_grasping/closed_loop_grasping/closed_loop_grasper.py) for more details.
 
-We implemented a state machine for the transitions between different stages of the closed-loop grasping process. Below is the flow chart for the callback function of the subscriber to **```/clg_trigger```**. The publishing steps for **```/target_msg```** is abstracted by the purple circle. Please refer the [code](./closed_loop_grasping/closed_loop_grasping/closed_loop_grasper.py) for more details.
 ![](resources/CLG_flow_chart.png)
