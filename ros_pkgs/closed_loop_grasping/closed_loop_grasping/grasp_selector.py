@@ -50,6 +50,9 @@ class GraspSelector(Node):
         Inputs:
             robot_T_seed_grasp -- (torch.tensor) shape (1,4,4)
             last_score -- (torch.tensor) shape (1,1)
+            enable_mf -- (Bool) use motion field measurement if set True
+            enable_region_scaling -- (Bool) 
+                increase sampling region if haven't seen good samples for a while
         Returns:
             sampling_region_scale -- (float)
             new_seed -- (torch.tensor) shape (1,4,4)
