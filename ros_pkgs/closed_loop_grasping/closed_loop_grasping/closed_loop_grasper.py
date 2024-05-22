@@ -233,7 +233,7 @@ class ClosedLoopGrasper(Node):
         elif self.state == State.SERVO_TO_PREGRASP:
             self.get_logger().info("State: SERVO_TO_PREGRASP")
             self.run_core_algorithm(
-                enable_mf = True,
+                enable_mf = False,
                 enable_region_scaling = True,
                 update_seed = True,
                 use_grasp_smoother = self.params['use_grasp_smoother'],
