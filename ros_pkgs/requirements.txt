@@ -1,0 +1,7 @@
+numpy
+open3d
+scipy
+opencv-contrib-python
+urdfpy
+python-fcl
+scikit-image
